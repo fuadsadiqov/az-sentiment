@@ -3,11 +3,36 @@
 Hər mərhələ: **nə etdik → əsas kod (slayda sığan) → nəticə → slayd mesajı**.
 Tam kod `scripts/` və `src/az_sentiment/` altındadır. Bütün rəqəmlər təmiz test datasındandır (n = 7786), əksi qeyd olunubsa başqa.
 
+### Qısaltmalar (Abbreviations)
+
+| Qısaltma | İngiliscə açılışı | Qısa izah |
+|---|---|---|
+| AI | Artificial Intelligence | Süni intellekt |
+| ML | Machine Learning | Maşın öyrənməsi |
+| NLP | Natural Language Processing | Təbii dilin emalı |
+| EDA | Exploratory Data Analysis | Datanın ilkin təhlili |
+| HF | Hugging Face | Model/dataset platforması (Hub) |
+| TF-IDF | Term Frequency – Inverse Document Frequency | Sözün mətndə tezliyi × bütün mətnlərdə nadirliyi |
+| LogReg | Logistic Regression | Xətti təsnifat modeli |
+| BERT | Bidirectional Encoder Representations from Transformers | Google-un encoder transformer modeli |
+| XLM-R | XLM-RoBERTa: Cross-lingual Language Model – Robustly Optimized BERT Pretraining Approach | 100 dildə öyrədilmiş çoxdilli transformer |
+| LLM | Large Language Model | Böyük dil modeli |
+| F1 | F1-score | Precision və recall-un harmonik ortası |
+| P / R | Precision / Recall | Dəqiqlik / əhatə |
+| CM | Confusion Matrix | Həqiqi vs proqnoz sinif cədvəli |
+| neg / neu / pos | negative / neutral / positive | Sinif adları |
+| val | validation | Hiperparametr seçmək üçün ayrılmış data |
+| p95 | 95th percentile | Dəyərlərin 95%-i bundan kiçikdir |
+| JSON | JavaScript Object Notation | Strukturlaşdırılmış mətn formatı |
+| GPU / CPU | Graphics / Central Processing Unit | Qrafik / mərkəzi prosessor |
+| bf16 / fp16 | bfloat16 (brain floating point) / 16-bit floating point | Yarım dəqiqlikli ədəd formatları, təlimi sürətləndirir |
+| it/s | iterations per second | Saniyədə emal olunan batch sayı |
+
 ---
 
-## 1. Data: problemin tapılması
+## 1. Data və EDA (Exploratory Data Analysis): problemin tapılması
 
-**Nə etdik:** HF-dən dataset (159k Google Play rəyi, 1–5★) yükləndi, ulduz → 3 sinif çevrildi, keyfiyyət yoxlandı.
+**Nə etdik:** HF (Hugging Face) Hub-dan dataset (159k Google Play rəyi, 1–5★) yükləndi, ulduz → 3 sinif çevrildi, keyfiyyət yoxlandı.
 
 ```python
 def score_to_label(score):          # 1-2★ → negative, 3★ → neutral, 4-5★ → positive
@@ -28,7 +53,7 @@ leak = te["text"].map(normalize).isin(train_norm).mean()      # → 0.529
 | Ən çox təkrarlanan | "əla" 17 557 dəfə, "super" 11 226 |
 | Sinif payı (təmiz) | negative 23.4% · **neutral 3.6%** · positive 73.0% |
 | Dublikatlarda ziddiyyətli label | 655 mətn |
-| Söz sayı | median 5, p95 = 25 |
+| Söz sayı | median 5, p95 (95th percentile) = 25 |
 | Azərbaycan hərfi (ə, ş, ç…) olan mətn | 65.1% |
 
 ![EDA](../results/figures/eda.png)
@@ -47,7 +72,7 @@ val, test   = train_test_split(rest, test_size=0.5, stratify=rest["label"], rand
 
 **Nəticə:** train 62 284 · val 7 785 · test 7 786. Eyni mətn iki split-də ola bilməz.
 
-**Slayd mesajı:** Hiperparametrlər yalnız **val**-da seçilir, **test**-ə bir dəfə baxılır.
+**Slayd mesajı:** Hiperparametrlər yalnız **val** (validation) datasında seçilir, **test**-ə bir dəfə baxılır.
 
 ---
 
@@ -63,13 +88,13 @@ DummyClassifier(strategy="stratified")      # paylanmaya görə təsadüfi
 | Hamıya "positive" | **0.730** | **0.281** | 0.000 | 0.000 | 0.844 |
 | Təsadüfi | 0.596 | 0.337 | 0.236 | 0.042 | 0.735 |
 
-![Majority CM](../results/figures/cm_baseline_majority.png)
+![Majority CM (Confusion Matrix)](../results/figures/cm_baseline_majority.png)
 
-**Slayd mesajı:** Heç nə öyrənməyən model 73% accuracy alır. Ona görə əsas metrika **macro-F1**-dir (hər sinif bərabər səs).
+**Slayd mesajı:** Heç nə öyrənməyən model 73% accuracy alır. Ona görə əsas metrika **macro-F1**-dir: hər sinfin F1-score-u (precision və recall-un harmonik ortası) ayrıca hesablanır və sadə ortası götürülür, yəni hər sinif bərabər səs verir.
 
 ---
 
-## 4. Klassik ML: TF-IDF + Logistic Regression
+## 4. Klassik ML (Machine Learning): TF-IDF (Term Frequency – Inverse Document Frequency) + Logistic Regression
 
 ```python
 features = FeatureUnion([
@@ -119,7 +144,7 @@ model = Pipeline([("tfidf", features),
 
 ---
 
-## 5. Transformer: XLM-RoBERTa fine-tune
+## 5. Transformer: XLM-RoBERTa (Cross-lingual Language Model – Robustly Optimized BERT Pretraining Approach) fine-tune
 
 ```python
 model = AutoModelForSequenceClassification.from_pretrained("FacebookAI/xlm-roberta-base", num_labels=3)
@@ -133,7 +158,7 @@ class WeightedTrainer(Trainer):                       # az sinifdə səhv daha b
 
 args = TrainingArguments(num_train_epochs=4, learning_rate=2e-5, per_device_train_batch_size=32,
                          eval_strategy="epoch", load_best_model_at_end=True,
-                         metric_for_best_model="macro_f1", bf16=True)
+                         metric_for_best_model="macro_f1", bf16=True)  # bf16 = bfloat16
 trainer = WeightedTrainer(..., callbacks=[EarlyStoppingCallback(early_stopping_patience=2)])
 ```
 
@@ -146,7 +171,7 @@ trainer = WeightedTrainer(..., callbacks=[EarlyStoppingCallback(early_stopping_p
 | 3 | 0.604 | 0.604 |
 | 4 | 0.608 | **0.610** (max → saxlanan model) |
 
-train_loss: 0.97 → 0.49 · RTX 4060 Laptop, ~25 dəq
+train_loss: 0.97 → 0.49 · RTX 4060 Laptop GPU (Graphics Processing Unit), ~25 dəq
 
 ![XLM-R history](../results/figures/history_xlm-roberta-base_weighted.png)
 
@@ -165,7 +190,7 @@ train_loss: 0.97 → 0.49 · RTX 4060 Laptop, ~25 dəq
 
 ---
 
-## 6. LLM: deepseek-r1:1.5b (zero/few-shot, öyrətmə yoxdur)
+## 6. LLM (Large Language Model): deepseek-r1:1.5b (zero/few-shot, öyrətmə yoxdur)
 
 ```python
 SCHEMA = {"type": "object", "properties": {"label": {"enum": ["negative", "neutral", "positive"]}}}
@@ -174,13 +199,13 @@ resp = ollama.chat(model="deepseek-r1:1.5b",
                    messages=[{"role": "system", "content": SYSTEM},   # sinif tərifləri
                              *shots,                                   # 3-shot: hər sinifdən 3 nümunə
                              {"role": "user", "content": f"Review: {text}"}],
-                   format=SCHEMA,                                      # structured output
+                   format=SCHEMA,                                      # structured output (JSON schema)
                    options={"temperature": 0, "num_predict": 1024})    # reasoning üçün yer
 ```
 
 **Nəticə (eyni 500 test nümunəsi):** _Colab-dan gələcək_
 
-| Model | Accuracy | Macro-F1 | F1 neg | F1 neu | F1 pos | Valid JSON | san/nümunə |
+| Model | Accuracy | Macro-F1 | F1 neg | F1 neu | F1 pos | Valid JSON (JavaScript Object Notation) | san/nümunə |
 |---|---|---|---|---|---|---|---|
 | deepseek 0-shot | | | | | | | |
 | deepseek 3-shot | | | | | | | |
@@ -200,7 +225,7 @@ _Colab-dan sonra `results/comparison.md` və `results/figures/comparison.png` bu
 | Model | Öyrətmə | Accuracy | Macro-F1 |
 |---|---|---|---|
 | Baseline (majority) | yox | 0.730 | 0.281 |
-| TF-IDF + LogReg | 62k, ~15 san (CPU) | 0.798 | 0.585 |
+| TF-IDF + LogReg (Logistic Regression) | 62k, ~15 san (CPU, Central Processing Unit) | 0.798 | 0.585 |
 | XLM-R (çəkili) | 62k, ~25 dəq (GPU) | 0.839 | 0.601 |
 | deepseek-r1 0/3-shot | yox | | |
 

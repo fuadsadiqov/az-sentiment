@@ -5,14 +5,14 @@
 | Səviyyə | Yanaşma | Skript |
 |---|---|---|
 | 0 | Baseline (çoxluq sinfi, təsadüfi) | `02_baselines.py` |
-| 1 | TF-IDF (söz + simvol n-qram) + Logistic Regression | `03_tfidf.py` |
-| 2 | Transformer fine-tune (XLM-RoBERTa / mBERT) | `04_transformer.py` |
-| 3 | LLM zero-/few-shot (Ollama, deepseek-r1:1.5b) | `05_llm.py` |
+| 1 | TF-IDF (Term Frequency – Inverse Document Frequency), söz + simvol n-qram, + Logistic Regression | `03_tfidf.py` |
+| 2 | Transformer fine-tune: XLM-RoBERTa (Cross-lingual Language Model – Robustly Optimized BERT Pretraining Approach) / mBERT (multilingual Bidirectional Encoder Representations from Transformers) | `04_transformer.py` |
+| 3 | LLM (Large Language Model) zero-/few-shot (Ollama, deepseek-r1:1.5b) | `05_llm.py` |
 
 **Dataset:** [`hajili/azerbaijani_review_sentiment_classification`](https://huggingface.co/datasets/hajili/azerbaijani_review_sentiment_classification) (MIT), Google Play rəyləri, 1–5 ulduz.
 Label: 1–2 → negative, 3 → neutral, 4–5 → positive.
 
-**Əsas metrika: macro-F1.** Data balanssızdır (73% positive), hamıya "positive" deyən model 73% accuracy alır.
+**Əsas metrika: macro-F1** (hər sinfin F1-score-unun sadə ortası). Data balanssızdır (73% positive), hamıya "positive" deyən model 73% accuracy alır.
 
 ## Data problemləri (01_prepare_data.py tapır)
 
@@ -34,7 +34,7 @@ ollama pull deepseek-r1:1.5b # LLM hissəsi üçün
 ## İşə salma (ardıcıl)
 
 ```bash
-uv run scripts/01_prepare_data.py                         # data + EDA -> data/processed, results/data_stats.json
+uv run scripts/01_prepare_data.py                         # data + EDA (Exploratory Data Analysis) -> data/processed, results/data_stats.json
 uv run scripts/02_baselines.py
 uv run scripts/03_tfidf.py                                # grid, leakage təcrübəsi, learning curve
 uv run scripts/04_transformer.py --weighted               # xlm-roberta-base (~GPU)
