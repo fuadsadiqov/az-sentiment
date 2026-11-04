@@ -1,0 +1,32 @@
+{
+  "model": "llm_deepseek-r1-1.5b_3shot",
+  "n_test": 500,
+  "accuracy": 0.246,
+  "macro_f1": 0.23678084847512468,
+  "weighted_f1": 0.3337287473426658,
+  "per_class": {
+    "negative": {
+      "precision": 0.3235294117647059,
+      "recall": 0.29464285714285715,
+      "f1-score": 0.308411214953271,
+      "support": 112.0
+    },
+    "neutral": {
+      "precision": 0.026143790849673203,
+      "recall": 0.5714285714285714,
+      "f1-score": 0.05,
+      "support": 14.0
+    },
+    "positive": {
+      "precision": 0.8913043478260869,
+      "recall": 0.2192513368983957,
+      "f1-score": 0.351931330472103,
+      "support": 374.0
+    }
+  },
+  "llm": "deepseek-r1:1.5b",
+  "shots_per_class": 3,
+  "valid_json_pct": 97.2,
+  "sec_per_item": 4.468,
+  "subset": true
+}

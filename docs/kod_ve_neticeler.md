@@ -180,9 +180,20 @@ train_loss: 0.97 → 0.49 · RTX 4060 Laptop GPU (Graphics Processing Unit), ~25
 | Model | Accuracy | Macro-F1 | F1 neg | F1 neu | F1 pos |
 |---|---|---|---|---|---|
 | XLM-R, çəkili loss | 0.839 | **0.601** | 0.752 | 0.146 | 0.906 |
-| XLM-R, çəkisiz | _Colab_ | | | | |
+| XLM-R, çəkisiz loss | **0.860** | 0.575 | 0.752 | 0.058 | 0.915 |
+
+Çəkisiz variantda neytral recall cəmi **0.032**-dir (278 neytraldan ~9-u tapılıb). Çəkisiz XLM-R testdə **ən yüksək accuracy** alır, amma macro-F1-də çəkili variantdan geri qalır. TF-IDF-də gördüyümüz accuracy tələsi transformer-də də eynilə təkrarlanır.
+
+| | Çəkili | Çəkisiz |
+|---|---|---|
+| Ən yaxşı val macro-F1 | 0.610 (epoch 4) | 0.576 (epoch 4) |
+| Min val_loss | 0.589 (epoch 2) | 0.391 (epoch 2) |
+| Öyrədildiyi yer | RTX 4060, ~25 dəq | Colab T4, ~1.5 saat (deepseek ilə paralel) |
+
+Çəkisiz variantın val_loss-u daha aşağıdır, amma modeli daha **pis**dir. Səbəb: adi loss əsasən pozitiv sinfi düz tapmağı mükafatlandırır, bizim məqsədimiz isə üç sinfin hamısıdır.
 
 ![XLM-R CM](../results/figures/cm_xlm-roberta-base_weighted.png)
+![XLM-R çəkisiz CM](../results/figures/cm_xlm-roberta-base.png)
 
 **Slayd mesajı:**
 - 278M parametrli model TF-IDF-dən cəmi **+0.016** macro-F1 qazandırır. Darboğaz modeldə deyil, **datada**dır.
@@ -203,37 +214,85 @@ resp = ollama.chat(model="deepseek-r1:1.5b",
                    options={"temperature": 0, "num_predict": 1024})    # reasoning üçün yer
 ```
 
-**Nəticə (eyni 500 test nümunəsi):** _Colab-dan gələcək_
+**Nəticə (eyni 500 test nümunəsi, Colab T4):**
 
 | Model | Accuracy | Macro-F1 | F1 neg | F1 neu | F1 pos | Valid JSON (JavaScript Object Notation) | san/nümunə |
 |---|---|---|---|---|---|---|---|
-| deepseek 0-shot | | | | | | | |
-| deepseek 3-shot | | | | | | | |
+| deepseek 0-shot | 0.510 | **0.368** | 0.441 | 0.048 | 0.615 | 99.2% | 10.6 |
+| deepseek 3-shot | 0.246 | **0.237** | 0.308 | 0.050 | 0.352 | 97.2% | 4.5 |
+| _müqayisə: XLM-R çəkili (eyni 500)_ | _0.844_ | _0.608_ | _0.740_ | _0.176_ | _0.907_ | — | — |
+| _müqayisə: təsadüfi baseline (eyni 500)_ | _0.596_ | _0.326_ | | | | | |
+
+**Proqnoz paylanması (500 nümunədə həqiqi: 374 pos, 112 neg, 14 neu):**
+
+| | negative | neutral | positive |
+|---|---|---|---|
+| 0-shot | 219 | 70 | 211 |
+| 3-shot | 102 | **306** | 92 |
+
+**Few-shot niyə pisləşdirdi?**
+1. **Sinif payı təhrif olundu.** Prompt-a hər sinifdən 3 nümunə qoyduq, yəni neytral 33% göründü. Realda isə 3%-dir. Kiçik model nümunələrdəki payı "öyrənir" və 500 rəyin 306-na "neutral" deyir.
+2. **Reasoning söndü.** Nümunələrdə assistant yalnız JSON yazırdı, model də bu formatı kopyaladı və düşünməyi kəsdi: izlərin çoxunda reasoning boşdur, cavab müddəti 10.6 → 4.5 san düşdü. Yəni model **formatı** təqlid edir, **mühakiməni** yox.
 
 **Reasoning izindən nümunə** (`results/llm_traces_*.jsonl`):
 > Review: "Hər şey çox super idi.bolt fooddan 100000 dəfə yaxşıdı."
 > Model düşünür: "...They mention 'yaxşıdı', which is a **Turkish** word meaning 'good'..."
 
-**Slayd mesajı:** _(nəticədən sonra)_. Kiçik LLM Azərbaycan dilini türkcə ilə qarışdırır, az resurslu dil problemi.
+**Slayd mesajı:**
+- Öyrədilməmiş 1.5B LLM təsadüfi baseline-dan cəmi +0.04 yaxşıdır və öyrədilmiş 278M-lik XLM-R-dən **0.24 macro-F1 geri qalır**.
+- Kiçik LLM Azərbaycan dilini türkcə ilə qarışdırır: az resurslu dil problemi.
+- Few-shot avtomatik olaraq kömək etmir: balanslaşdırılmış nümunələr kiçik modeli azlıq sinfinə doğru itələyə bilər.
 
 ---
 
 ## 7. Yekun müqayisə
 
-_Colab-dan sonra `results/comparison.md` və `results/figures/comparison.png` buraya gələcək._
+**Tam test (n = 7786):**
 
-| Model | Öyrətmə | Accuracy | Macro-F1 |
-|---|---|---|---|
-| Baseline (majority) | yox | 0.730 | 0.281 |
-| TF-IDF + LogReg (Logistic Regression) | 62k, ~15 san (CPU, Central Processing Unit) | 0.798 | 0.585 |
-| XLM-R (çəkili) | 62k, ~25 dəq (GPU) | 0.839 | 0.601 |
-| deepseek-r1 0/3-shot | yox | | |
+| Model | Öyrətmə | Accuracy | Macro-F1 | F1 neu |
+|---|---|---|---|---|
+| **XLM-R, çəkili** | 62k, ~25 dəq (GPU) | 0.839 | **0.601** | 0.146 |
+| TF-IDF + LogReg (Logistic Regression), balanced | 62k, ~15 san (CPU, Central Processing Unit) | 0.798 | 0.585 | **0.150** |
+| XLM-R, çəkisiz | 62k, GPU | **0.860** | 0.575 | 0.058 |
+| TF-IDF, çəkisiz | 62k, CPU | 0.854 | 0.548 | 0.000 |
+| Təsadüfi baseline | yox | 0.596 | 0.337 | 0.042 |
+| Majority baseline | yox | 0.730 | 0.281 | 0.000 |
+
+**LLM alt çoxluğu (eyni 500 nümunə):** XLM-R çəkili 0.608 · TF-IDF 0.573 · deepseek 0-shot 0.368 · təsadüfi 0.326 · majority 0.285 · deepseek 3-shot 0.237
+
+![Müqayisə](../results/figures/comparison.png)
+
+**Slayd mesajı:** Accuracy üzrə sıralasaq, birinci yerdə **çəkisiz** modellər olar, halbuki onlar neytralı tanımır. Macro-F1 üzrə isə sıralama tamam başqadır.
 
 ---
 
 ## 8. Səhv təhlili
 
-_Colab-dan sonra `results/errors_xlm-roberta-base_weighted.md`: dilimlər (uzunluq, Azərbaycan hərfləri), qarışdırılan cütlər, label səs-küyü namizədləri + 100 nümunəlik əl yoxlaması._
+Model: XLM-R çəkili. Testdə 1254 səhv (16.1%). Tam fayl: `results/errors_xlm-roberta-base_weighted.md`.
+
+**Dilimlər:**
+
+| Dilim | n | Accuracy | Macro-F1 | F1 neg | F1 neu |
+|---|---|---|---|---|---|
+| 1–2 söz | 1699 | **0.913** | 0.531 | 0.592 | 0.045 |
+| 3–5 söz | 2308 | 0.886 | 0.601 | 0.729 | 0.135 |
+| 6–15 söz | 2687 | 0.793 | 0.589 | 0.756 | 0.148 |
+| 16+ söz | 1092 | 0.738 | 0.584 | **0.806** | **0.173** |
+| Azərbaycan hərfləri var | 5024 | 0.830 | 0.604 | 0.756 | 0.154 |
+| Azərbaycan hərfləri yox | 2762 | 0.855 | 0.593 | 0.745 | 0.120 |
+| Dublikatlarda ziddiyyətli label | 77 | 0.766 | **0.490** | 0.634 | 0.000 |
+
+**Qarışdırılan cütlər (həqiqi → proqnoz):** positive→negative 479 · negative→positive 272 · positive→neutral 173 · neutral→positive 123 · neutral→negative 112 · negative→neutral 95
+
+**Nümunələr: "negative → neutral" (model neytral deyib, label neqativdir):**
+- [1★] "Maaş köçəndə sms necə gəlir?" (əslində **sualdır**, model haqlıdır)
+- [1★] "Salam. Yeni versiya nə vaxt olacaqdır? Məncə köhnə versiyası bundan daha rahat və yaxşı idi..."
+- [2★] "Z 445s4" (mənasız mətn)
+
+**Slayd mesajı:**
+- Qısa mətnlərdə accuracy yüksəkdir ("əla", "super"), amma neytral demək olar tanınmır. Uzun mətnlərdə isə neqativ və neytral daha yaxşı tanınır, çünki şikayət və sual konteksti görünür.
+- Azərbaycan hərfləri olmadan yazılmış mətnlərdə neytral F1 0.154 → 0.120 düşür. Fərq gözlədiyimizdən kiçikdir: fine-tune modelə "ela = əla" kimi qarşılıqları öyrədib.
+- Səhvlərin bir hissəsi model səhvi deyil, **label səhvidir**: 1★ verilmiş sual, 5★ verilmiş şikayət. Növbəti addım: `label_noise_candidates_*.csv`-dən 100 nümunəni əl ilə yoxlayıb label səhvinin faizini hesablamaq.
 
 ---
 
@@ -243,3 +302,4 @@ _Colab-dan sonra `results/errors_xlm-roberta-base_weighted.md`: dilimlər (uzunl
 2. **Accuracy aldadır:** balanssız datada macro-F1 və sinif üzrə recall lazımdır.
 3. **Neytral sinfin tavanı:** iki fərqli model eyni ~0.15 F1-də ilişir, çünki 3★ rəylərin çoxu əslində sual və ya şikayətdir.
 4. **Transfer learning kömək edir, amma az:** +0.016 macro-F1, 100 dəfə çox hesablama bahasına.
+5. **Öyrədilmiş kiçik model > öyrədilməmiş LLM:** dar tapşırıqda 278M-lik XLM-R 1.5B-lik LLM-i 0.24 macro-F1 fərqlə qabaqlayır. Few-shot isə bu kiçik LLM-i daha da pisləşdirdi.

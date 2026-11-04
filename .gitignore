@@ -6,3 +6,4 @@ results/log_*.txt
 # data/processed repoya düşür (dedup + split, MIT lisenziyalı dataset); xam cache yox
 data/*
 !data/processed/
+colab-results/
