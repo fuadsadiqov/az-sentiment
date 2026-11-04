@@ -1,0 +1,71 @@
+{
+  "model": "tfidf_logreg",
+  "n_test": 7786,
+  "accuracy": 0.7978422810172103,
+  "macro_f1": 0.5845122608801594,
+  "weighted_f1": 0.8165497384433408,
+  "per_class": {
+    "negative": {
+      "precision": 0.6584711667411712,
+      "recall": 0.8080087767416346,
+      "f1-score": 0.725615763546798,
+      "support": 1823.0
+    },
+    "neutral": {
+      "precision": 0.10998307952622674,
+      "recall": 0.23381294964028776,
+      "f1-score": 0.14959723820483314,
+      "support": 278.0
+    },
+    "positive": {
+      "precision": 0.9427188382412263,
+      "recall": 0.8221635883905013,
+      "f1-score": 0.8783237808888471,
+      "support": 5685.0
+    }
+  },
+  "grid": [
+    {
+      "C": 0.5,
+      "class_weight": "None",
+      "val_macro_f1": 0.54,
+      "sec": 11.9
+    },
+    {
+      "C": 2.0,
+      "class_weight": "None",
+      "val_macro_f1": 0.5542,
+      "sec": 13.7
+    },
+    {
+      "C": 8.0,
+      "class_weight": "None",
+      "val_macro_f1": 0.5562,
+      "sec": 15.3
+    },
+    {
+      "C": 0.5,
+      "class_weight": "balanced",
+      "val_macro_f1": 0.5821,
+      "sec": 13.9
+    },
+    {
+      "C": 2.0,
+      "class_weight": "balanced",
+      "val_macro_f1": 0.5788,
+      "sec": 15.3
+    },
+    {
+      "C": 8.0,
+      "class_weight": "balanced",
+      "val_macro_f1": 0.5729,
+      "sec": 24.1
+    }
+  ],
+  "best": {
+    "C": 0.5,
+    "class_weight": "balanced",
+    "val_macro_f1": 0.5821,
+    "sec": 13.9
+  }
+}

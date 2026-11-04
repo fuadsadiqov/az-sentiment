@@ -1,0 +1,37 @@
+[project]
+name = "az-sentiment"
+version = "0.1.0"
+description = "Azerbaijani app-review sentiment: TF-IDF vs XLM-R vs LLM"
+authors = [
+    { name = "fuad.sadigov", email = "fuad.sadigov@FUAD-SADIGOV" }
+]
+requires-python = ">=3.10,<3.14"
+dependencies = [
+    "accelerate>=1.15.0",
+    "datasets>=5.1.0",
+    "evaluate>=0.4.6",
+    "joblib>=1.6.0",
+    "matplotlib>=3.11.2",
+    "ollama>=0.6.3",
+    "pandas>=3.1.0",
+    "pyarrow>=26.0.1",
+    "scikit-learn>=1.9.1",
+    "seaborn>=0.13.2",
+    "sentencepiece>=0.2.2",
+    "tabulate>=0.10.0",
+    "torch>=2.11.0",
+    "tqdm>=4.70.1",
+    "transformers>=5.22.1",
+]
+
+[build-system]
+requires = ["uv_build>=0.12.13,<0.13.0"]
+build-backend = "uv_build"
+
+[[tool.uv.index]]
+name = "pytorch-cu128"
+url = "https://download.pytorch.org/whl/cu128"
+explicit = true
+
+[tool.uv.sources]
+torch = { index = "pytorch-cu128" }

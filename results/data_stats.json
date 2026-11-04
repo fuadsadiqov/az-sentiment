@@ -1,0 +1,45 @@
+{
+  "raw_train": 127534,
+  "raw_test": 31885,
+  "raw_test_in_train_pct": 52.9,
+  "raw_unique_texts": 77855,
+  "raw_score_dist": {
+    "1": 0.1133,
+    "2": 0.0151,
+    "3": 0.0215,
+    "4": 0.0362,
+    "5": 0.8138
+  },
+  "top_texts": {
+    "əla": 17557,
+    "super": 11226,
+    "👍": 5334,
+    "ela": 1482,
+    "yaxşı": 1276,
+    "eladi": 1176,
+    "çox gözəl": 1079,
+    "əladı": 1020,
+    "👍👍👍": 1019,
+    "superdi": 938,
+    "əladır": 851,
+    "yaxsi": 732,
+    "könüllü": 651,
+    "👍👍": 639,
+    "cox gozel": 599
+  },
+  "clean_total": 77855,
+  "clean_sizes": {
+    "train": 62284,
+    "val": 7785,
+    "test": 7786
+  },
+  "clean_label_dist": {
+    "negative": 0.2341,
+    "neutral": 0.0358,
+    "positive": 0.7301
+  },
+  "conflicting_label_texts": 655,
+  "words_median": 5.0,
+  "words_p95": 25.0,
+  "az_chars_pct": 65.1
+}
