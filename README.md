@@ -42,6 +42,7 @@ uv run scripts/04_transformer.py                          # çəkisiz variant (m
 uv run scripts/05_llm.py --shots 0
 uv run scripts/05_llm.py --shots 3
 uv run scripts/06_compare.py                              # results/comparison.md
+uv run scripts/08_llm_scale.py                            # LLM miqyas: Qwen2.5 1.5B/3B/7B (colab_llm_scale.ipynb)
 uv run scripts/07_error_analysis.py --model xlm-roberta-base_weighted --other tfidf_logreg
 ```
 
