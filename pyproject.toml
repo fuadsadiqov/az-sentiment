@@ -5,7 +5,7 @@ description = "Azerbaijani app-review sentiment: TF-IDF vs XLM-R vs LLM"
 authors = [
     { name = "fuad.sadigov", email = "fuad.sadigov@FUAD-SADIGOV" }
 ]
-requires-python = ">=3.10,<3.14"
+requires-python = ">=3.11,<3.14"
 dependencies = [
     "accelerate>=1.15.0",
     "datasets>=5.1.0",
@@ -19,7 +19,7 @@ dependencies = [
     "seaborn>=0.13.2",
     "sentencepiece>=0.2.2",
     "tabulate>=0.10.0",
-    "torch>=2.11.0",
+    "torch>=2.4",
     "tqdm>=4.70.1",
     "transformers>=5.22.1",
 ]
