@@ -2,14 +2,6 @@
 
 **Klassik ML, Transformer və LLM yanaşmalarının müqayisəsi**
 
-Süni intellekt fənni · Sərbəst iş · Mövzu: *Azərbaycan dilində sadə mətn təsnifatı və sentiment analizi*
-Müəllif: Fuad Sadigov · 2026
-
-> [!NOTE]
-> Bu səhifə həm təqdimat, həm texniki hesabatdır. Hər bölmə bir "slayd"dır. Kod parçaları ▸ işarəli bölmələrdə gizlədilib, açmaq üçün klikləyin.
-
----
-
 ## 1. Problem
 
 Google Play-də Azərbaycan tətbiqlərinə (bank, taksi, çatdırılma) minlərlə rəy yazılır. Bu rəyləri **avtomatik olaraq neqativ, neytral və pozitiv** siniflərə ayırmaq şirkətə şikayətləri tez tapmağa və məhsulu yaxşılaşdırmağa kömək edir.
